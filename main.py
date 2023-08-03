@@ -2,6 +2,80 @@ import pandas as pd
 import numpy as np
 import ast
 from datetime import datetime
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/genero/")
+def genero(anio: str):
+    df_gen_anio = df_generos[df_generos.anio == anio]
+    lista_generos = []
+    for _ in range(5):
+        mayor = df_gen_anio.genres.describe().top
+        lista_generos.append(mayor)
+        df_gen_anio = df_gen_anio[df_gen_anio['genres'] != mayor]
+
+    return {anio: lista_generos}
+
+
+@app.get("/juegos/")
+def juegos(anio: str):
+    df_juegos = df[df['anio'] == anio]
+    return {anio: list(df_juegos.title)}
+
+
+@app.get("/specs/")
+def specs(anio: str):
+    df_specs_anio = df_specs[df_specs.anio == anio]
+    lista_specs = []
+    for _ in range(5):
+        mayor = df_specs_anio.specs.describe().top
+        lista_specs.append(mayor)
+        df_specs_anio = df_specs_anio[df_specs_anio['specs'] != mayor]
+
+    return {anio: lista_specs}
+
+
+@app.get("/earlyaccess/")
+def earlyaccess(anio: str):
+    df_early = df[df['anio'] == anio]
+    return {anio: df_early[df_early.early_access == True].title.count()}
+
+
+@app.get("/sentiment/")
+def sentiment(anio: str):
+    df_sent = df[df['anio'] == anio]
+    dicc = {}
+    mayor = ''
+    cantidad = 0
+    for i in range(len(df_sent.sentiment.unique())):
+        if df_sent.sentiment.describe().top == 'No data':
+            df_sent = df_sent[df_sent['sentiment'] != 'No data']
+        else:
+            mayor = df_sent.sentiment.describe().top
+            cantidad = df_sent.sentiment.describe().freq
+            dicc[mayor] = cantidad
+            df_sent = df_sent[df_sent['sentiment'] != mayor]
+
+    return dicc
+
+
+@app.get("/metascore/")
+def metascore(anio: str):
+    df_meta = df[df['anio'] == anio]
+    dicc_mayores = {}
+
+    df_meta_mayor = df_meta.sort_values(by="metascore", ascending=False)
+    for _, fila in df_meta_mayor.iterrows():
+        if len(dicc_mayores) == 5 or df_meta_mayor.metascore.count() == len(dicc_mayores):
+            break
+        else:
+            dicc_mayores[fila['title']] = fila['metascore']
+    if len(dicc_mayores) == 0:
+        return "No hay valoraciones registradas este año"
+
+    return dicc_mayores
+
 
 
 def convertir_a_anio(fecha_str):
@@ -16,6 +90,7 @@ def convertir_a_anio(fecha_str):
         return pd.NaT 
 
 
+"""
 def genero(anio):
     
     df_gen_anio = df_generos[df_generos.anio == anio]
@@ -81,7 +156,7 @@ def metascore(anio):
         return "No hay valoraciones registradas este anio"
     
     return dicc_mayores
-
+"""
 
 #Convierto el archivo json en una lista de python por lineas.
 lineas_js = []
