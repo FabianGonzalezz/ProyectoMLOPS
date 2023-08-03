@@ -130,6 +130,3 @@ df.sentiment.fillna("No data", inplace=True)
 df['metascore'] = pd.to_numeric(df['metascore'], errors='coerce')
 
 
-print(specs('2017'))
-
-
