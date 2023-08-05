@@ -41,7 +41,11 @@ def specs(anio: str):
 @app.get("/earlyaccess/")
 def earlyaccess(anio: str):
     df_early = df[df['anio'] == anio]
-    return {anio: df_early[df_early.early_access == True].title.astype(int).count()}
+    count_early_access = df_early[df_early.early_access == True].title.astype(int).count()
+    response_data = {anio: count_early_access}
+    return JSONResponse(content=response_data)
+    #df_early = df[df['anio'] == anio]
+    #return {anio: df_early[df_early.early_access == True].title.astype(int).count()}
 
 
 @app.get("/sentiment/")
