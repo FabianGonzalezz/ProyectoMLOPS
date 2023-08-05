@@ -41,7 +41,7 @@ def specs(anio: str):
 @app.get("/earlyaccess/")
 def earlyaccess(anio: str):
     df_early = df[df['anio'] == anio]
-    return {anio: df_early[df_early.early_access == True].title.count()}
+    return {anio: df_early[df_early.early_access == True].title.astype(int).count()}
 
 
 @app.get("/sentiment/")
