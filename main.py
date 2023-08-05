@@ -3,7 +3,6 @@ import numpy as np
 import ast
 from datetime import datetime
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -42,11 +41,7 @@ def specs(anio: str):
 @app.get("/earlyaccess/")
 def earlyaccess(anio: str):
     df_early = df[df['anio'] == anio]
-    count_early_access = df_early[df_early.early_access == True].title.count()
-    response_data = {anio: count_early_access}
-    return JSONResponse(content=response_data)
-    #df_early = df[df['anio'] == anio]
-    #return {anio: df_early[df_early.early_access == True].title.count()}
+    return {anio: df_early[df_early.early_access == True].title.count()}
 
 
 @app.get("/sentiment/")
