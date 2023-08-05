@@ -102,75 +102,6 @@ def convertir_a_anio(fecha_str):
     else:
         return pd.NaT 
 
-""" 
-def genero(anio):
-    
-    df_gen_anio = df_generos[df_generos.anio == anio]
-    lista_generos = []
-    for _ in range (5):
-        mayor = df_gen_anio.genres.describe().top
-        lista_generos.append(mayor)
-        df_gen_anio =  df_gen_anio[df_gen_anio['genres'] != mayor]
-        
-    return {anio:lista_generos}
-
-
-def juegos(anio):
-    df_juegos = df[df['anio'] == anio]
-    return {anio: list(df_juegos.title)}
-    
-
-
-def specs(anio):
-    df_specs_anio = df_specs[df_specs.anio == anio]
-    lista_specs = []
-    for _ in range (5):
-        mayor = df_specs_anio.specs.describe().top
-        lista_specs.append(mayor)
-        df_specs_anio =  df_specs_anio[df_specs_anio['specs'] != mayor]
-        
-    return {anio:lista_specs}	
-
-
-def earlyaccess(anio):
-    df_early = df[df['anio'] == anio]
-    return {anio:df_early[df_early.early_access == True].title.count()}
-    
-
-def sentiment(anio):
-    df_sent = df[df['anio'] == anio]
-    dicc = {}
-    mayor = ''
-    cantidad = 0
-    for i in range (len(df_sent.sentiment.unique())):
-        if df_sent.sentiment.describe().top == 'No data':
-            df_sent = df_sent[df_sent['sentiment'] != 'No data']
-        else:
-            mayor = df_sent.sentiment.describe().top
-            cantidad = df_sent.sentiment.describe().freq
-            dicc[mayor] = cantidad
-            df_sent = df_sent[df_sent['sentiment'] != mayor]
-    
-    return dicc
-
-
-def metascore(anio):
-    df_meta = df[df['anio'] == anio]
-    dicc_mayores = {}
-
-    df_meta_mayor = df_meta.sort_values(by="metascore", ascending=False)
-    for _, fila in df_meta_mayor.iterrows():
-        if len(dicc_mayores) == 5 or df_meta_mayor.metascore.count() == len(dicc_mayores):
-            break
-        else:
-            dicc_mayores[fila['title']] = fila['metascore']
-    if len(dicc_mayores) == 0:
-        return "No hay valoraciones registradas este anio"
-    
-    return dicc_mayores
-    
-"""
-
 
 #Convierto el archivo json en una lista de python por lineas.
 lineas_js = []
@@ -231,9 +162,6 @@ df.drop(columns=['url', 'reviews_url', 'release_date', 'id', 'developer'], inpla
 # ---------------------- FIN FUNC -------------------------- #
 # ---------------------- INICIO EDA ------------------------- #
 
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 #Creo un nuevo dataset copiando el original para no perder los datos originales.
 
 df_ml = df
@@ -274,13 +202,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
-
-# Supongamos que tienes un DataFrame llamado 'df2_genres' con las columnas 'publisher', 'genres', 'anio', 'discount_price', 'early_access' y 'price'
-# Si deseas cargar desde un archivo CSV, por ejemplo, puedes hacerlo así:
-# df2_genres = pd.read_csv('nombre_del_archivo.csv')
-
-# Si 'df2_genres' ya está creado, puedes continuar desde aquí
-
 
 # Separar las características (X) y la variable dependiente (y)
 X = df_ml[['publisher', 'tags', 'sentiment', 'anio']]
