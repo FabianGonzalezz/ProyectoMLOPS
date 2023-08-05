@@ -55,7 +55,7 @@ def sentiment(anio: str):
             df_sent = df_sent[df_sent['sentiment'] != 'No data']
         else:
             mayor = df_sent.sentiment.describe().top
-            cantidad = df_sent.sentiment.describe().freq
+            cantidad = int(df_sent.sentiment.describe().freq)
             dicc[mayor] = cantidad
             df_sent = df_sent[df_sent['sentiment'] != mayor]
 
