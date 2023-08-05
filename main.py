@@ -23,7 +23,7 @@ def genero(anio: str):
 @app.get("/juegos/")
 def juegos(anio: str):
     df_juegos = df[df['anio'] == anio]
-    return {anio: list(df_juegos.title)}
+    return {anio: list(df_juegos.titl)}
 
 
 @app.get("/specs/")
