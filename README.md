@@ -23,12 +23,42 @@ El proyecto consta de las siguientes funcionalidades principales:
 6. **Cálculo de RMSE**: Se calcula el Root Mean Squared Error (RMSE) para evaluar el rendimiento del modelo de predicción.
 
 
-## Capturas de Pantalla
+## EDA
 
-Incluidas en la carpeta `src/images`:
+Podemos ver en el siguiente grafico que en el 2019 tenemos una clara diferencia en el precio promedio, superando los $14. Ademas podemos ver que en el 2021 el promedio es el mas bajo con unos $5 promedio. Como conclusion por este fenomeno creo que pudo haber influenciado la pandemia por el COVID-19 y la enorme cantidad de compras de juegos de bajo costo obtenidas en este periodo.
 
-1. [Analisis del precio promedio en relacion con el anio de salida](src/images/anio.png)
-2. [Analisis del precio proomedio en relacion con el sentimiento registrado](src/images/sentimiento.png)
+![Analisis del precio promedio en relacion con el anio de salida](src/images/anio.png)
+
+Podemos ver en el siguiente grafico que los juegos que suelen tener un mayor precio son los que tienen una valoracion 'Overwhelmingly Positive', seguido de los 'Very Positive'. Detras de estos podemos encontrar los 'Very Negative' contando con algunos outliers que elevan el precio por sobre los 'Very Positive'. Por ultimo vemos que los juegos que tienen una valoracion 'Overwhelmingly Negative' son los que suelen tener menores precios.
+
+![Analisis del precio proomedio en relacion con el sentimiento registrado](src/images/sentimiento.png)
+
+## Consideraciones
+
+Para el Modelo de Machine Learning no se tomaron en cuenta los juegos que superaban los $100 de precio, ya que a mi parecer, no eran muchos y me afectaban negativamente al rendimiento del modelo.
+Ademas, si bien la columna Metascore era una buena medida a tener en cuenta a la hora de predecir el precio, no se tomo en cuenta debido a la gran cantidad de datos Nulos. Siendo alrededor de 24000 de un dataset de aproxidamente 30000. Creo que de haber tomado en cuenta la columna Metascore, hubiera perdido demasiada informacion. 
+
+En este modelo se trato de usar la mayor cantidad de datos posibles para asemejarse a la realidad.
+
+Los parametros requeridos para hacer funcionar la prediccion del modelo mediante FastAPI son:
+
+1. Publisher. En formato string el nombre de la empresa que publica el juego (Ubisoft, Epic Games, Valve)
+
+2. Tag. En formato string el tipo de juego. (Action, Adventure, Indie, Simulator)
+
+3. Sentiment. En formato string el sentimiento general del juego siguiendo las siguientes consideraciones:
+* Overwhelmingly Positive
+* Very Positive
+* Positive
+* Mostly Positive
+* Mixed
+* Mostly Negative
+* Negative
+* Very Negative
+* Overwhelmingly Negative.
+* No data
+
+4. Anio. En formato string el anio de salida el juego (2016, 2017, 2018)
 
 ## Instalación y Uso
 
