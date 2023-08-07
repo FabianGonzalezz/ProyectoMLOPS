@@ -37,8 +37,16 @@ Podemos ver en el siguiente grafico que los juegos que suelen tener un mayor pre
 
 Para el Modelo de Machine Learning no se tomaron en cuenta los juegos que superaban los $100 de precio, ya que a mi parecer, no eran muchos y me afectaban negativamente al rendimiento del modelo.
 Ademas, si bien la columna Metascore era una buena medida a tener en cuenta a la hora de predecir el precio, no se tomo en cuenta debido a la gran cantidad de datos Nulos. Siendo alrededor de 24000 de un dataset de aproxidamente 30000. Creo que de haber tomado en cuenta la columna Metascore, hubiera perdido demasiada informacion. 
-
 En este modelo se trato de usar la mayor cantidad de datos posibles para asemejarse a la realidad.
+
+
+La API cuenta con 6 endpoints:
+* Genero( Año: str ): Se ingresa un año y devuelve un diccionario de clave Año con los 5 géneros más ofrecidos en el orden correspondiente como valor.
+* Juegos( Año: str ): Se ingresa un año y devuelve un diccionario de clave Año con una lista de los juegos lanzados en el año como valor.
+* Specs( Año: str ): Se ingresa un año y devuelve un diccionario de clave Año con los 5 specs que más se repiten en el mismo en el orden correspondiente como valor.
+* Earlyacces( Año: str ): Diccionario con la cantidad de juegos lanzados en un año con early access. Siendo Año la clave y la cantidad el valor.
+* Sentiment( Año: str ): Según el año de lanzamiento, se devuelve un diccionario, de clave sentimiento y de valor la cantidad de registros asociados a ese Sentimiento (Positive: 200, Negative: 100).
+* Metascore( Año: str ): Top 5 juegos según año con mayor metascore Siendo un diccionario de clave el nombre del juego y de valor el metascore.
 
 Los parametros requeridos para hacer funcionar la prediccion del modelo mediante FastAPI son:
 
