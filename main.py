@@ -86,11 +86,33 @@ def prediccion(publisher, tags, sentiment, anio):
     'sentiment': [sentiment],
     'anio': [anio]
     })
-	
-    precio = linear_model.predict(data_prediccion)
-    return f'El precio estimado es: {round(precio[0], 2)} y el RMSE es: {round(rmse,2)}'
+    
+    # Filtro el DataFrame en base a las condiciones de publisher, tags, sentiment y anio
+    filtro = (df_ml['publisher'] == publisher) & (df_ml['tags'] == tags) &  (df_ml['sentiment'] == sentiment) &  (df_ml['anio'] == anio)
+    
+    #Creo un dataframe filtrado para buscar el precio original
+    df_filtrado = df_ml.loc[filtro]
+    
+    # Si el dataframe esta vacio, por ejemplo por poner un anio erroneo, eliminamos el anio y seguimos la busqueda.
+    if int(df_filtrado.anio.count()) == 0:
+        filtro = (df_ml['publisher'] == publisher) & (df_ml['tags'] == tags) &  (df_ml['sentiment'] == sentiment)
+        df_filtrado = df_ml.loc[filtro]
+        
+    #Hago una segunda comprobacion y si aun asi no hay datos por otro error en los parametros retorno que no se pueden encontrar datos.    
+    if int(df_filtrado.anio.count()) == 0:
+        return 'Datos no encontrados'
+        
+    #Busco los valores del precio original para los filtros aplicados y si hay mas de uno calculamos el promedio.
+    precio_original = df_filtrado['price'].values
+    precio_original = [precio_original.mean()]
+    
+    precio_predict = linear_model.predict(data_prediccion)
+    
+    rmse = mean_squared_error(precio_original, precio_predict, squared=False)
 
+    return f'El precio estimado es: {round(precio_predict[0], 2)}, el RMSE es: {round(rmse,2)} y el RMSE del modelo es: {rmse_modelo}'
 
+# Creo esta funcion para convertir la columna release_date en la columna anio siendo solo el numero del anio en formato string.
 def convertir_a_anio(fecha_str):
     if pd.notnull(fecha_str):
         try:
@@ -111,40 +133,36 @@ with open('./src/steam_games.json') as f:
 
 df = pd.DataFrame(lineas_js)
 
-
-
-# Elimino los registros que contienen precio nulo porque si el objetivo es predecir el precio considero que estos registros no me aportan al entrenamiento de mi modelo. Aprox 4% de los registros del dataset total.
+# Elimino los registros que contienen precio nulo porque si el objetivo es predecir el precio considero que estos registros no me aportan al entrenamiento de mi modelo.
 df = df.dropna(subset=['price'])
 
-# Relleno los nulos en 'title' con los valores de 'app_name y elimino title para evitar redundancias.
-
-# Agrego los registros de developer para completar publisher.
+# Agrego los registros de developer para completar la columna publisher.
 df['publisher'].fillna(df['developer'], inplace=True)
 
-# Relleno los nulos en 'title' con los valores de 'app_name y elimino title para evitar redundancias.
+# Relleno los nulos en 'title' con los valores de 'app_name y elimino app_name para evitar redundancias.
 
 df['title'] = df.apply(lambda row: row['app_name'] if pd.isnull(row['title']) else row['title'], axis=1)
 df = df.drop(columns='app_name')
 
 #Veo los nulos y borro el de indice 74 porque tiene practicamente toda la informacion NaN
 df[df['title'].isnull()]
-
 df = df.drop(74)
 
+#Convierto los registros que indican que un juego es gratis a precio 0.00. Tambien los precios que estan en formato string les aplico el precio correcto.
 df['price'] = df['price'].replace(['Free To Play', 'Free to Play', 'Free', 'Free Demo', 'Play for Free!', 'Install Now', 'Play WARMACHINE: Tactics Demo', 'Free Mod', 'Install Theme', 'Third-party', 'Play Now', 'Free HITMAN™ Holiday Pack', 'Play the Demo', 'Free to Try', 'Free Movie', 'Free to Use'], 0.00)
 df['price'] = df['price'].replace(['Starting at $499.00'], 499.00)
 df['price'] = df['price'].replace(['Starting at $449.00'], 449.00)
 
-
+#Aplico la funcion de conversion a anio
 df['anio'] = df.release_date.apply(convertir_a_anio)
 
-#Expando el dataframe original para ver los distintos generos y Creo un dataframe nuevo con las columnas Genero y Anio
+
+#Expando el dataframe original para ver los distintos generos y creo un dataframe nuevo con las columnas Genero y Anio
 df_generos = df.explode('genres')
 columnas_a_mantener = ['genres', 'anio']
 df_generos = df_generos.drop(columns=[col for col in df_generos.columns if col not in columnas_a_mantener])
 
-
-#Expando el dataframe original para ver los distintos specs y Creo un dataframe nuevo con las columnas a Specs y Anio
+#Expando el dataframe original para ver los distintos specs y creo un dataframe nuevo con las columnas a Specs y Anio
 df_specs = df.explode('specs')
 columnas_a_mantener = ['specs', 'anio']
 df_specs = df_specs.drop(columns=[col for col in df_specs.columns if col not in columnas_a_mantener])
@@ -156,23 +174,23 @@ df.sentiment.fillna("No data", inplace=True)
 # Convierto los valores de string 'NA' en valores NaN con el parametro errors=coerce. Esto lo hago para poder tener solo numeros y NaN en la columna.
 df['metascore'] = pd.to_numeric(df['metascore'], errors='coerce')
 
+#Elimino las columnas url, reviews_url, release_date, id y developer porque no van a ser utilizadas.
 df.drop(columns=['url', 'reviews_url', 'release_date', 'id', 'developer'], inplace=True)
 
+# ---------------------- FIN FUNC ------------------------------------- #
+# ---------------------- INICIO ETL PARA ML ------------------------- #
 
-# ---------------------- FIN FUNC -------------------------- #
-# ---------------------- INICIO EDA ------------------------- #
-
-#Creo un nuevo dataset copiando el original para no perder los datos originales.
+#Creo un nuevo dataset copiando el original para no perder los datos originales que va a ser utilizado para el proceso de ML.
 
 df_ml = df
 
-# Creo una mascara para reemplazar los registros que contienen 'user' con No data.
+# Creo una mascara para reemplazar los registros que contienen 'user' de la columna sentiment con No data. Porque considero que no hay datos suficientes.
+
 mask = df_ml['sentiment'].str.contains('user', case=False)
 df_ml.loc[mask, 'sentiment'] = 'No data'
 
 # Lleno los Nan con 0 de la columna discount_price
 df_ml['discount_price'].fillna(0, inplace=True)
-
 
 #Elimino los Nan que quedan en el dataset
 df_ml.dropna(subset=['genres'], inplace=True)
@@ -181,7 +199,7 @@ df_ml.dropna(subset=['specs'], inplace=True)
 df_ml.dropna(subset=['anio'], inplace=True)
 df_ml.dropna(subset=['publisher'], inplace=True)
 
-# Borro los outliers y utilizo el operador ~ para decirle que seleccione todas las columnas que no cumplan esa condicion_outlier
+# Borro los outliers y utilizo el operador ~ para decirle que seleccione todas las columnas que no cumplan esa condicion_outlier. Para este proceso los juegos con mas de $100 de precio van a ser considerados Outliers.
 condicion_outliers = df_ml['price'] > 100
 df_ml= df_ml[~condicion_outliers]
 
@@ -192,8 +210,9 @@ df_ml = df_ml.drop(columns=columnas_a_eliminar)
 #Expando mi df para ver bien las diferentes tags
 df_ml = df_ml.explode('tags')
 
-#------------------------- FIN EDA ---------------------------#
-#---------------------- INICIO MODELO ---------------------#
+
+# ---------------------- FIN ETL PARA ML ------------------------- #
+#---------------------- INICIO MODELO ---------------------------#
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -201,42 +220,39 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
 
-# Separar las características (X) y la variable dependiente (y)
+# Separo las columnas publisher, tags, sentiment y anio como variables independientes y price como variable dependiente.
 X = df_ml[['publisher', 'tags', 'sentiment', 'anio']]
 y = df_ml['price']
 
-# Dividir el conjunto de datos en conjuntos de entrenamiento y prueba
+# Divido el conjunto de datos en conjuntos de entrenamiento y prueba
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=28)
 
-# Definir la transformación para las variables categóricas 'publisher' y 'genres'
+# Transformo caracteristicas categoricas utilizando codificación One-Hot para poder utilizarlas como X 
 categorical_features = ['publisher', 'tags', 'sentiment', 'anio']
 categorical_transformer = Pipeline(steps=[
     ('onehot', OneHotEncoder(handle_unknown='ignore'))
 ])
 
-#Combinar las transformaciones en un preprocesador
+#Combino las transformaciones en un preprocesador
 preprocessor = ColumnTransformer(
     transformers=[
         ('cat', categorical_transformer, categorical_features)
     ])
 
-# Crear el modelo de Regresión Lineal
+# Creo el modelo de Regresion Lineal
 linear_model = Pipeline(steps=[('preprocessor', preprocessor),
                                 ('regressor', LinearRegression())])
 
-# Ajustar el modelo con los datos de entrenamiento
+# Ajusto el modelo con los datos de entrenamiento
 linear_model.fit(X_train, y_train)
 
-# Realizar predicciones en el conjunto de prueba
+
+# Realizo predicciones en el conjunto de prueba
 y_pred = linear_model.predict(X_test)
 
-# Calcular el RMSE
-rmse = mean_squared_error(y_test, y_pred, squared=False)
-
-y_train_pred = linear_model.predict(X_train)
-r2_train = r2_score(y_train, y_train_pred)
+# Calculo el RMSE del modelo
+rmse_modelo = round(mean_squared_error(y_test, y_pred, squared=False),2)
 
 
 
