@@ -71,8 +71,7 @@ Los parametros requeridos para hacer funcionar la prediccion del modelo mediante
 ## Instalación y Uso
 
 1. Clona este repositorio: `git clone https://github.com/FabianGonzalezz/ProyectoMLOPS`
-2. Accede a la carpeta del proyecto: `cd PI_ML_OPS-ft`
-3. Instala las dependencias: `pip install -r requirements.txt`
-4. Ejecuta la API con FastAPI: `uvicorn main:app --reload`
+2. Instala las dependencias: `pip install -r requirements.txt`
+3. Ejecuta la API con FastAPI: `uvicorn main:app --reload`
 
 Si tienes preguntas o comentarios, puedes contactarme en [Gmail](mailto:fabiann.m.gonzalez@gmail.com) o a través de mi perfil de GitHub: [Github](https://github.com/FabianGonzalezz/).
